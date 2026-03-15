@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs-extra";
 import chalk from "chalk";
+import { spawn } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,6 +51,8 @@ async function copySourceFiles(src, dest) {
 }
 
 export async function scaffold({ projectName, language, database, includeTests }) {
+  // Backwards-compatible: if caller passed `installDependencies` include it
+  const installDependencies = arguments[0]?.installDependencies ?? false;
   const lang = language === "TypeScript" ? "ts" : "js";
   const dbKey = DB_ADDON_MAP[database];
 
@@ -100,7 +103,9 @@ export async function scaffold({ projectName, language, database, includeTests }
   console.log(chalk.green(`✔ Project "${chalk.bold(projectName)}" created successfully!\n`));
   console.log(chalk.white("Next steps:"));
   console.log(chalk.cyan(`  cd ${projectName}`));
-  console.log(chalk.cyan(`  npm install`));
+  if (!installDependencies) {
+    console.log(chalk.cyan(`  npm install`));
+  }
   console.log(chalk.cyan(`  cp .env.example .env`));
   console.log(chalk.cyan(`  # Fill in your .env values`));
   if (database !== "MongoDB") {
@@ -108,4 +113,28 @@ export async function scaffold({ projectName, language, database, includeTests }
     console.log(chalk.dim(`  # or use migrations: npx prisma migrate dev --name init`));
   }
   console.log(chalk.cyan(`  npm run dev\n`));
+
+  // Optionally install dependencies automatically
+  if (installDependencies) {
+    console.log(chalk.white('\nInstalling dependencies (this may take a few minutes)...'));
+    try {
+      await new Promise((resolve, reject) => {
+        const child = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install'], {
+          cwd: destDir,
+          stdio: 'inherit',
+          shell: false,
+        });
+
+        child.on('close', (code) => {
+          if (code === 0) return resolve();
+          return reject(new Error(`npm install exited with code ${code}`));
+        });
+        child.on('error', (err) => reject(err));
+      });
+      console.log(chalk.green('\n✔ Dependencies installed successfully.'));
+    } catch (err) {
+      console.error(chalk.red('\nError installing dependencies:'), err.message || err);
+      console.log(chalk.yellow(`\nYou can install manually by running:\n  cd ${projectName}\n  npm install`));
+    }
+  }
 }
