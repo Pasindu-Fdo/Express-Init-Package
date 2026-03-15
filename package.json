@@ -1,0 +1,46 @@
+{
+  "name": "create-express-init",
+  "version": "1.0.0",
+  "description": "Scaffold a production-ready Express.js authentication starter",
+  "bin": {
+    "create-express-init": "./bin/create-express-init.js"
+  },
+  "type": "module",
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "addons"
+  ],
+  "scripts": {
+    "test": "echo \"No tests\""
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^9.3.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "express",
+    "authentication",
+    "scaffold",
+    "starter",
+    "typescript",
+    "jwt"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@prisma/client": "^7.5.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.5.0",
+    "mongoose": "^9.3.0"
+  }
+}
