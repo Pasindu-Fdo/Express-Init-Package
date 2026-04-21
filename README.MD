@@ -1,29 +1,77 @@
 # create-express-init
 
-Scaffold a production-ready Express.js authentication starter for JavaScript and TypeScript.
+Scaffold a production-ready Express.js authentication starter for JavaScript and TypeScript with sensible defaults and optional database/test integrations.
 
-Badges
-- CI: ![CI](https://github.com/Pasindu-Fdo/Express-Init-Package/actions/workflows/ci.yml/badge.svg)
-- Release: ![Release](https://github.com/Pasindu-Fdo/Express-Init-Package/actions/workflows/release.yml/badge.svg)
+[![npm version](https://img.shields.io/npm/v/create-express-init.svg)](https://www.npmjs.com/package/create-express-init)
+[![Node.js](https://img.shields.io/node/v/create-express-init)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- npm: ![npm](https://img.shields.io/npm/v/create-express-init.svg)
+## Why create-express-init
 
-Quick start
+- Generate a clean Express project in minutes
+- Choose JavaScript or TypeScript
+- Add MongoDB, MySQL, or PostgreSQL setup
+- Optionally include Jest test scaffolding
+- Get an authentication-ready structure designed for scaling
+
+## Quick Start
 
 ```bash
 npx create-express-init my-app
 ```
 
-Current release
+Then:
 
-- create-express-init@1.0.0 — published 2026-03-12 by pdeshan27. See https://www.npmjs.com/package/create-express-init
+```bash
+cd my-app
+cp .env.example .env
+# Fill in your .env values
+npm run dev
+```
 
-Options: choose `js` or `ts`, database (`mongo`, `mysql`, `postgres`), tests (`jest` or none), and whether to auto-install dependencies.
+## Requirements
 
-Docs: see docs/USAGE.md for examples and options.
+- Node.js 20 or newer
+- npm (or any compatible package manager)
 
-Contributing
-See `CONTRIBUTING.md` for how to contribute and commit message format (Conventional Commits).
+## Interactive Options
 
-License
-MIT. See LICENSE.
+When you run the command, you can choose:
+
+- Language: `js` or `ts`
+- Database: `mongo`, `mysql`, `postgres`, or no database addon
+- Tests: `jest` or none
+- Auth structure: single-role or multi-role
+- Auto-install dependencies: yes or no
+
+## SQL Database Setup (MySQL/PostgreSQL)
+
+If you selected a SQL addon, run one of the following after updating `.env`:
+
+```bash
+npx prisma db push
+```
+
+or
+
+```bash
+npx prisma migrate dev --name init
+```
+
+## What Gets Generated
+
+- Base Express app template (JS or TS)
+- Authentication flow scaffolding (controller/service/repository-friendly layout)
+- Selected database integration addon
+- Optional Jest setup
+
+## Documentation
+
+- Usage guide: [docs/USAGE.md](docs/USAGE.md)
+- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security policy: [SECURITY.md](SECURITY.md)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
+
+## License
+
+MIT License. See [LICENSE](LICENSE).
