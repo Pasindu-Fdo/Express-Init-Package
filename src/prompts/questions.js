@@ -32,10 +32,4 @@ export const questions = [
     message: "Include Jest test setup?",
     default: true,
   },
-  {
-    type: "confirm",
-    name: "installDependencies",
-    message: "Install npm dependencies after scaffolding?",
-    default: true,
-  },
 ];
