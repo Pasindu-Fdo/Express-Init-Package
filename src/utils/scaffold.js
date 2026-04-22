@@ -65,7 +65,7 @@ async function replaceInFile(filePath, replacements) {
   }
 }
 
-async function applySingleRoleMode(destDir, lang) {
+async function applySingleRoleMode(destDir, lang, database) {
   const ext = lang === "ts" ? "ts" : "js";
 
   await replaceInFile(path.join(destDir, "src", "controllers", `auth.controller.${ext}`), [
@@ -81,9 +81,34 @@ async function applySingleRoleMode(destDir, lang) {
       ["async register(name, email, password, role) {", "async register(name, email, password) {"],
       [
         "const user = await userRepository.create({ name, email, role, passwordHash });",
-        'const user = await userRepository.create({ name, email, role: "user", passwordHash });',
+        "const user = await userRepository.create({ name, email, passwordHash });",
+      ],
+      ["return this.generateToken(user.id, user.role);", "return this.generateToken(user.id);"],
+      ["generateToken(id, role) {", "generateToken(id) {"],
+      ["return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: \"7d\" });", "return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: \"7d\" });"],
+    ]);
+
+    await replaceInFile(path.join(destDir, "src", "middlewares", "auth.middleware.js"), [
+      ["req.user = { id: decoded.id, role: decoded.role };", "req.user = { id: decoded.id };"],
+      [
+        "export const authorize =\n  (...allowedRoles) =>\n  (req, res, next) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n    if (!allowedRoles.includes(req.user.role)) {\n      return res.status(403).json({ message: \"Forbidden\" });\n    }\n    next();\n  };",
+        "export const authorize =\n  () =>\n  (req, res, next) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n    next();\n  };",
       ],
     ]);
+
+    if (database === "MongoDB") {
+      await replaceInFile(path.join(destDir, "src", "models", "user.model.js"), [
+        ['    role: { type: String, enum: ["superadmin", "admin", "user"], default: "user" },\n', ""],
+      ]);
+    }
+
+    if (database === "MySQL" || database === "PostgreSQL") {
+      await replaceInFile(path.join(destDir, "prisma", "schema.prisma"), [
+        ["  role         Role     @default(user)\n", ""],
+        ["\nenum Role {\n  superadmin\n  admin\n  user\n}\n", "\n"],
+      ]);
+    }
+
     return;
   }
 
@@ -98,13 +123,56 @@ async function applySingleRoleMode(destDir, lang) {
     ],
     [
       "    const user = await userRepository.create({\n      name,\n      email,\n      role,\n      passwordHash,\n    });",
-      "    const user = await userRepository.create({\n      name,\n      email,\n      role: \"user\",\n      passwordHash,\n    });",
+      "    const user = await userRepository.create({\n      name,\n      email,\n      passwordHash,\n    });",
     ],
+    ["return this.generateToken(user.id, user.role);", "return this.generateToken(user.id);"],
+    ["generateToken(id: string, role: string) {", "generateToken(id: string) {"],
+    ["return jwt.sign({ id, role }, process.env.JWT_SECRET!, { expiresIn: \"7d\" });", "return jwt.sign({ id }, process.env.JWT_SECRET!, { expiresIn: \"7d\" });"],
   ]);
 
   await replaceInFile(path.join(destDir, "src", "types", "auth.type.ts"), [
-    ['export type UserRole = "superadmin" | "admin" | "user";', 'export type UserRole = "user";'],
+    [
+      'export type UserRole = "superadmin" | "admin" | "user";\n\nexport type JwtUserPayload = {\n  id: string;\n  role: UserRole;\n};\n\nexport type CreateUserInput = {\n  name: string;\n  email: string;\n  passwordHash: string;\n  role: UserRole;\n};\n\nexport type UpdateUserInput = Partial<{\n  name: string;\n  email: string;\n  passwordHash: string;\n  photoUrl: string;\n  role: UserRole;\n  locale: string;\n  isActive: boolean;\n}>;\n',
+      "export type JwtUserPayload = {\n  id: string;\n};\n\nexport type CreateUserInput = {\n  name: string;\n  email: string;\n  passwordHash: string;\n};\n\nexport type UpdateUserInput = Partial<{\n  name: string;\n  email: string;\n  passwordHash: string;\n  photoUrl: string;\n  locale: string;\n  isActive: boolean;\n}>;\n",
+    ],
   ]);
+
+  await replaceInFile(path.join(destDir, "src", "middlewares", "auth.middleware.ts"), [
+    [
+      'import type { JwtUserPayload, UserRole } from "../types/auth.type.js";',
+      'import type { JwtUserPayload } from "../types/auth.type.js";',
+    ],
+    ["req.user = { id: decoded.id, role: decoded.role };", "req.user = { id: decoded.id };"],
+    [
+      "export const authorize =\n  (...allowedRoles: UserRole[]) =>\n  (req: AuthRequest, res: Response, next: NextFunction) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n\n    if (!allowedRoles.includes(req.user.role)) {\n      return res.status(403).json({ message: \"Forbidden\" });\n    }\n\n    next();\n  };",
+      "export const authorize =\n  () =>\n  (req: AuthRequest, res: Response, next: NextFunction) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n\n    next();\n  };",
+    ],
+  ]);
+
+  if (database === "MongoDB") {
+    await replaceInFile(path.join(destDir, "src", "models", "user.model.ts"), [
+      ['    role: { type: String, enum: ["superadmin", "admin", "user"], default: "user" },\n', ""],
+    ]);
+  }
+
+  if (database === "MySQL" || database === "PostgreSQL") {
+    await replaceInFile(path.join(destDir, "src", "repositories", "user.repository.ts"), [
+      ['import { type Role } from "@prisma/client";\n', ""],
+      [
+        "    return prisma.user.create({\n      data: { ...data, role: data.role as Role },\n    });",
+        "    return prisma.user.create({\n      data,\n    });",
+      ],
+      [
+        "    return prisma.user.update({\n      where: { id },\n      data: { ...data, ...(data.role && { role: data.role as Role }) },\n    });",
+        "    return prisma.user.update({\n      where: { id },\n      data,\n    });",
+      ],
+    ]);
+
+    await replaceInFile(path.join(destDir, "prisma", "schema.prisma"), [
+      ["  role         Role     @default(user)\n", ""],
+      ["\nenum Role {\n  superadmin\n  admin\n  user\n}\n", "\n"],
+    ]);
+  }
 }
 
 export async function scaffold({ projectName, language, database, includeTests, authMode = "multi" }) {
@@ -152,7 +220,7 @@ export async function scaffold({ projectName, language, database, includeTests, 
   }
 
   if (authMode === "single") {
-    await applySingleRoleMode(destDir, lang);
+    await applySingleRoleMode(destDir, lang, database);
   }
 
   // ── 6. Write merged package.json ───────────────────────────────────────────
@@ -162,18 +230,7 @@ export async function scaffold({ projectName, language, database, includeTests, 
   // ── 7. Write final .env.example ────────────────────────────────────────────
   await fs.writeFile(path.join(destDir, ".env.example"), finalEnv);
 
-  // ── 8. Print next steps ────────────────────────────────────────────────────
-  console.log(chalk.green(`✔ Project "${chalk.bold(projectName)}" created successfully!\n`));
-  console.log(chalk.white("Next steps:"));
-  console.log(chalk.cyan(`  cd ${projectName}`));
-  console.log(chalk.cyan(`  cp .env.example .env`));
-  console.log(chalk.cyan(`  # Fill in your .env values`));
-  if (database !== "MongoDB") {
-    console.log(chalk.cyan(`  npx prisma db push`));
-    console.log(chalk.dim(`  # or use migrations: npx prisma migrate dev --name init`));
-  }
-  console.log(chalk.cyan(`  npm run dev\n`));
-
+  // ── 8. Install dependencies ─────────────────────────────────────────────────
   console.log(chalk.white('\nInstalling dependencies (this may take a few minutes)...'));
   try {
     await new Promise((resolve, reject) => {
@@ -194,4 +251,15 @@ export async function scaffold({ projectName, language, database, includeTests, 
     console.error(chalk.red('\nError installing dependencies:'), err.message || err);
     console.log(chalk.yellow(`\nYou can install manually by running:\n  cd ${projectName}\n  npm install`));
   }
+
+  // ── 9. Print next steps ────────────────────────────────────────────────────
+  console.log(chalk.green(`✔ Project "${chalk.bold(projectName)}" created successfully!\n`));
+  console.log(chalk.white("Next steps:"));
+  console.log(chalk.cyan(`  cd ${projectName}`));
+  console.log(chalk.cyan(`  cp .env.example .env`));
+  if (database !== "MongoDB") {
+    console.log(chalk.cyan(`  npx prisma db push`));
+    console.log(chalk.dim(`  # or use migrations: npx prisma migrate dev --name init`));
+  }
+  console.log(chalk.cyan(`  npm run dev\n`));
 }
