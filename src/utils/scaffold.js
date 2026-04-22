@@ -128,6 +128,10 @@ export async function scaffold({ projectName, language, database, includeTests, 
   const dbAddonDir = path.join(ROOT_DIR, "addons", `db-${dbKey}-${lang}`);
   await copySourceFiles(dbAddonDir, destDir);
 
+  if (database !== "MongoDB") {
+    await fs.remove(path.join(destDir, "src", "models"));
+  }
+
   // ── 3. Merge package.json: base + DB addon ─────────────────────────────────
   let mergedPkg = await fs.readJson(path.join(baseDir, "package.json"));
   const dbPkg = await fs.readJson(path.join(dbAddonDir, "package.json"));
