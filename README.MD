@@ -25,7 +25,6 @@ Then:
 ```bash
 cd my-app
 cp .env.example .env
-# Fill in your .env values
 npm run dev
 ```
 
@@ -39,10 +38,21 @@ npm run dev
 When you run the command, you can choose:
 
 - Language: `js` or `ts`
-- Database: `mongo`, `mysql`, `postgres`, or no database addon
+- Database: `mongo`, `mysql`, or `postgres`
 - Tests: `jest` or none
 - Auth structure: single-role or multi-role
-- Auto-install dependencies: yes or no
+
+Dependencies are installed automatically after scaffolding.
+
+## Auth Model Options
+
+- Single-role: removes role from the user schema/model and auth token payload.
+- Multi-role: keeps role-based structure (`superadmin`, `admin`, `user`).
+
+## SQL Notes (MySQL/PostgreSQL)
+
+- The generated project does not include `src/models` for SQL selections.
+- Prisma schema and repositories are generated for DB access.
 
 ## SQL Database Setup (MySQL/PostgreSQL)
 
