@@ -50,7 +50,64 @@ async function copySourceFiles(src, dest) {
   });
 }
 
-export async function scaffold({ projectName, language, database, includeTests }) {
+async function replaceInFile(filePath, replacements) {
+  if (!(await fs.pathExists(filePath))) return;
+
+  const current = await fs.readFile(filePath, "utf-8");
+  let updated = current;
+
+  for (const [find, replaceWith] of replacements) {
+    updated = updated.replace(find, replaceWith);
+  }
+
+  if (updated !== current) {
+    await fs.writeFile(filePath, updated);
+  }
+}
+
+async function applySingleRoleMode(destDir, lang) {
+  const ext = lang === "ts" ? "ts" : "js";
+
+  await replaceInFile(path.join(destDir, "src", "controllers", `auth.controller.${ext}`), [
+    [
+      "const { name, email, password, role } = req.body;",
+      "const { name, email, password } = req.body;",
+    ],
+    ["authService.register(name, email, password, role)", "authService.register(name, email, password)"],
+  ]);
+
+  if (lang === "js") {
+    await replaceInFile(path.join(destDir, "src", "services", "auth.service.js"), [
+      ["async register(name, email, password, role) {", "async register(name, email, password) {"],
+      [
+        "const user = await userRepository.create({ name, email, role, passwordHash });",
+        'const user = await userRepository.create({ name, email, role: "user", passwordHash });',
+      ],
+    ]);
+    return;
+  }
+
+  await replaceInFile(path.join(destDir, "src", "services", "auth.service.ts"), [
+    [
+      "import type { UserRole, LoginInput, ChangePasswordInput } from \"../types/auth.type.js\";",
+      "import type { LoginInput, ChangePasswordInput } from \"../types/auth.type.js\";",
+    ],
+    [
+      "async register(name: string, email: string, password: string, role: UserRole) {",
+      "async register(name: string, email: string, password: string) {",
+    ],
+    [
+      "    const user = await userRepository.create({\n      name,\n      email,\n      role,\n      passwordHash,\n    });",
+      "    const user = await userRepository.create({\n      name,\n      email,\n      role: \"user\",\n      passwordHash,\n    });",
+    ],
+  ]);
+
+  await replaceInFile(path.join(destDir, "src", "types", "auth.type.ts"), [
+    ['export type UserRole = "superadmin" | "admin" | "user";', 'export type UserRole = "user";'],
+  ]);
+}
+
+export async function scaffold({ projectName, language, database, includeTests, authMode = "multi" }) {
   const lang = language === "TypeScript" ? "ts" : "js";
   const dbKey = DB_ADDON_MAP[database];
 
@@ -88,6 +145,10 @@ export async function scaffold({ projectName, language, database, includeTests }
 
     const jestPkg = await fs.readJson(path.join(jestAddonDir, "package.json"));
     mergedPkg = mergePackageJson(mergedPkg, jestPkg);
+  }
+
+  if (authMode === "single") {
+    await applySingleRoleMode(destDir, lang);
   }
 
   // ── 6. Write merged package.json ───────────────────────────────────────────

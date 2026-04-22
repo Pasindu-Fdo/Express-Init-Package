@@ -32,4 +32,14 @@ export const questions = [
     message: "Include Jest test setup?",
     default: true,
   },
+  {
+    type: "list",
+    name: "authMode",
+    message: "Authorization model:",
+    choices: [
+      { name: "Single role (user)", value: "single" },
+      { name: "Multi role (superadmin/admin/user)", value: "multi" },
+    ],
+    default: "multi",
+  },
 ];
