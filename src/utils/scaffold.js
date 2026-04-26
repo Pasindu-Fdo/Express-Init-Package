@@ -32,6 +32,10 @@ function mergePackageJson(base, addon) {
   return result;
 }
 
+function normalizePackageName(projectName) {
+  return projectName.toLowerCase();
+}
+
 /**
  * Copies files from `src` to `dest`, skipping package.json and .env.example
  * so those can be merged separately.
@@ -89,7 +93,7 @@ async function applySingleRoleMode(destDir, lang, database) {
     ]);
 
     await replaceInFile(path.join(destDir, "src", "middlewares", "auth.middleware.js"), [
-      ["req.user = { id: decoded.id, role: decoded.role };", "req.user = { id: decoded.id };"],
+      ["req.user = { id: user.id, role: user.role };", "req.user = { id: decoded.id };"],
       [
         "export const authorize =\n  (...allowedRoles) =>\n  (req, res, next) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n    if (!allowedRoles.includes(req.user.role)) {\n      return res.status(403).json({ message: \"Forbidden\" });\n    }\n    next();\n  };",
         "export const authorize =\n  () =>\n  (req, res, next) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n    next();\n  };",
@@ -132,7 +136,7 @@ async function applySingleRoleMode(destDir, lang, database) {
 
   await replaceInFile(path.join(destDir, "src", "types", "auth.type.ts"), [
     [
-      'export type UserRole = "superadmin" | "admin" | "user";\n\nexport type JwtUserPayload = {\n  id: string;\n  role: UserRole;\n};\n\nexport type CreateUserInput = {\n  name: string;\n  email: string;\n  passwordHash: string;\n  role: UserRole;\n};\n\nexport type UpdateUserInput = Partial<{\n  name: string;\n  email: string;\n  passwordHash: string;\n  photoUrl: string;\n  role: UserRole;\n  locale: string;\n  isActive: boolean;\n}>;\n',
+      'export type UserRole = "superadmin" | "admin" | "user";\n\nexport type JwtUserPayload = {\n  id: string;\n  role: UserRole;\n};\n\nexport type CreateUserInput = {\n  name: string;\n  email: string;\n  passwordHash: string;\n};\n\nexport type UpdateUserInput = Partial<{\n  name: string;\n  email: string;\n  passwordHash: string;\n  photoUrl: string;\n  role: UserRole;\n  locale: string;\n  isActive: boolean;\n}>;\n',
       "export type JwtUserPayload = {\n  id: string;\n};\n\nexport type CreateUserInput = {\n  name: string;\n  email: string;\n  passwordHash: string;\n};\n\nexport type UpdateUserInput = Partial<{\n  name: string;\n  email: string;\n  passwordHash: string;\n  photoUrl: string;\n  locale: string;\n  isActive: boolean;\n}>;\n",
     ],
   ]);
@@ -142,7 +146,7 @@ async function applySingleRoleMode(destDir, lang, database) {
       'import type { JwtUserPayload, UserRole } from "../types/auth.type.js";',
       'import type { JwtUserPayload } from "../types/auth.type.js";',
     ],
-    ["req.user = { id: decoded.id, role: decoded.role };", "req.user = { id: decoded.id };"],
+    ["req.user = { id: user.id, role: user.role };", "req.user = { id: decoded.id };"],
     [
       "export const authorize =\n  (...allowedRoles: UserRole[]) =>\n  (req: AuthRequest, res: Response, next: NextFunction) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n\n    if (!allowedRoles.includes(req.user.role)) {\n      return res.status(403).json({ message: \"Forbidden\" });\n    }\n\n    next();\n  };",
       "export const authorize =\n  () =>\n  (req: AuthRequest, res: Response, next: NextFunction) => {\n    if (!req.user) {\n      return res.status(401).json({ message: \"Unauthorized\" });\n    }\n\n    next();\n  };",
@@ -178,6 +182,7 @@ async function applySingleRoleMode(destDir, lang, database) {
 export async function scaffold({ projectName, language, database, includeTests, authMode = "multi" }) {
   const lang = language === "TypeScript" ? "ts" : "js";
   const dbKey = DB_ADDON_MAP[database];
+  const packageName = normalizePackageName(projectName);
 
   const destDir = path.resolve(process.cwd(), projectName);
 
@@ -224,7 +229,7 @@ export async function scaffold({ projectName, language, database, includeTests, 
   }
 
   // ── 6. Write merged package.json ───────────────────────────────────────────
-  mergedPkg.name = projectName;
+  mergedPkg.name = packageName;
   await fs.writeJson(path.join(destDir, "package.json"), mergedPkg, { spaces: 2 });
 
   // ── 7. Write final .env.example ────────────────────────────────────────────
