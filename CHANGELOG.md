@@ -1,5 +1,20 @@
 # Changelog
 
+# [1.3.0](https://github.com/Pasindu-Fdo/Express-Init-Package/compare/v1.2.0...v1.3.0) (2026-04-26)
+
+
+### Bug Fixes
+
+* auth middleware now reads user role from database ([ea44ef3](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/ea44ef3e193345f220de4eb3251ac2d5d646c209))
+* normalized the package name to lowercase ([b6370c1](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/b6370c197f445a07a04ac5162eaedf6da5849fe2))
+* registrations now validates a password and the template no longer trusts client-supplied role ([8842d91](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/8842d91c076192e176c4d0cbc7ffe8b0deb008d3))
+* removed the unwanted dependencies and fixed versions ([50781a4](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/50781a4da1aaf2da263d048b9a5d0d249be674c3))
+
+
+### Features
+
+* Introduced the reset password option ([fb75961](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/fb7596122f3f7c76302a19cab5605d5b70fc7b98))
+
 All notable changes to this project will be documented in this file.
 
 The project uses Semantic Versioning and Conventional Commits to generate changelogs.
