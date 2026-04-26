@@ -16,6 +16,8 @@ model User {
   role         Role     @default(user)
   locale       String   @default("en-US")
   isActive     Boolean  @default(true)
+  resetPasswordToken   String?
+  resetPasswordExpires  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

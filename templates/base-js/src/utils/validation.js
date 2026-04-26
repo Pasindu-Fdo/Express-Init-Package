@@ -48,6 +48,29 @@ export function validateRegisterInput(input) {
   };
 }
 
+export function validateForgotPasswordInput(input) {
+  if (!input || typeof input !== "object") throw new ValidationError("Invalid input data");
+  validateRequiredString(input.email, "Email");
+  validateEmail(input.email);
+  return {
+    email: input.email.trim().toLowerCase(),
+  };
+}
+
+export function validateResetPasswordInput(input) {
+  if (!input || typeof input !== "object") throw new ValidationError("Invalid input data");
+  validateRequiredString(input.token, "Token");
+  validateRequiredString(input.newPassword, "New password");
+  validateRequiredString(input.confirmPassword, "Confirm password");
+  validatePassword(input.newPassword);
+  if (input.newPassword !== input.confirmPassword) throw new ValidationError("Passwords do not match");
+  return {
+    token: input.token,
+    newPassword: input.newPassword,
+    confirmPassword: input.confirmPassword,
+  };
+}
+
 export function validateLoginInput(input) {
   if (!input || typeof input !== "object") throw new ValidationError("Invalid input data");
   validateRequiredString(input.email, "Email");

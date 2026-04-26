@@ -2,7 +2,12 @@ import type { Response } from "express";
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
 import authService from "../services/auth.service.js";
 import { asyncHandler } from "../middlewares/error.middleware.js";
-import { validateRegisterInput } from "../utils/validation.js";
+import {
+  validateRegisterInput,
+  validateForgotPasswordInput,
+  validateResetPasswordInput,
+  validateChangePasswordInput,
+} from "../utils/validation.js";
 
 class AuthController {
   register = asyncHandler(async (req, res: Response) => {
@@ -34,12 +39,25 @@ class AuthController {
   });
 
   forgetPassword = asyncHandler(async (req, res: Response) => {
-    // Implementation for forget password
-    res.status(200).json({ message: "Forget password functionality not implemented yet." });
+    const { email } = validateForgotPasswordInput(req.body);
+    const { resetToken } = await authService.forgotPassword(email);
+
+    res.status(200).json({
+      message: "Password reset token generated successfully",
+      resetToken,
+    });
+  });
+
+  resetPassword = asyncHandler(async (req, res: Response) => {
+    const { token, newPassword, confirmPassword } = validateResetPasswordInput(req.body);
+
+    await authService.resetPassword(token, newPassword, confirmPassword);
+
+    res.status(200).json({ message: "Password reset successfully" });
   });
 
   changePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
-    const { oldPassword, newPassword, confirmPassword } = req.body;
+    const { oldPassword, newPassword, confirmPassword } = validateChangePasswordInput(req.body);
     const userId = req.user!.id;
 
     await authService.changePassword(oldPassword, newPassword, confirmPassword, userId);

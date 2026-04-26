@@ -5,6 +5,17 @@ class UserRepository {
     return prisma.user.findUnique({ where: { email } });
   }
 
+  async findByResetPasswordToken(token) {
+    return prisma.user.findFirst({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          gt: new Date(),
+        },
+      },
+    });
+  }
+
   async create(data) {
     return prisma.user.create({ data });
   }

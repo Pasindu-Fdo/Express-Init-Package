@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
 import userRepository from "../repositories/user.repository.js";
 import {
@@ -7,8 +8,18 @@ import {
   NotFoundError,
   InternalServerError,
 } from "../utils/errors.js";
-import { validateLoginInput, validateChangePasswordInput } from "../utils/validation.js";
-import type { LoginInput, ChangePasswordInput } from "../types/auth.type.js";
+import {
+  validateLoginInput,
+  validateChangePasswordInput,
+  validateForgotPasswordInput,
+  validateResetPasswordInput,
+} from "../utils/validation.js";
+import type {
+  LoginInput,
+  ChangePasswordInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from "../types/auth.type.js";
 
 class AuthService {
   async register(name: string, email: string, password: string) {
@@ -77,6 +88,50 @@ class AuthService {
 
     const updatedUser = await userRepository.update(userId, { passwordHash });
     if (!updatedUser) throw new InternalServerError("Failed to update password");
+  }
+
+  async forgotPassword(email: string) {
+    const validatedInput: ForgotPasswordInput = validateForgotPasswordInput({ email });
+
+    const user = await userRepository.findByEmail(validatedInput.email);
+    if (!user || !user.isActive) {
+      return { resetToken: null };
+    }
+
+    const resetToken = randomBytes(32).toString("hex");
+    const resetPasswordToken = createHash("sha256").update(resetToken).digest("hex");
+    const resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+
+    const updatedUser = await userRepository.update(user.id, {
+      resetPasswordToken,
+      resetPasswordExpires,
+    });
+
+    if (!updatedUser) throw new InternalServerError("Failed to create password reset token");
+
+    return { resetToken };
+  }
+
+  async resetPassword(token: string, newPassword: string, confirmPassword: string) {
+    const validatedInput: ResetPasswordInput = validateResetPasswordInput({
+      token,
+      newPassword,
+      confirmPassword,
+    });
+
+    const resetPasswordToken = createHash("sha256").update(validatedInput.token).digest("hex");
+    const user = await userRepository.findByResetPasswordToken(resetPasswordToken);
+    if (!user) throw new UnauthorizedError("Invalid or expired reset token");
+
+    const passwordHash = await bcrypt.hash(validatedInput.newPassword, 10);
+
+    const updatedUser = await userRepository.update(user.id, {
+      passwordHash,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+
+    if (!updatedUser) throw new InternalServerError("Failed to reset password");
   }
 
   generateToken(id: string, role: string) {

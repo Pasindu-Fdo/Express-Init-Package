@@ -6,6 +6,13 @@ class UserRepository {
     return User.findOne({ email });
   }
 
+  async findByResetPasswordToken(token: string) {
+    return User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    });
+  }
+
   async create(data: CreateUserInput) {
     const user = await User.create(data);
     return Array.isArray(user) ? user[0] : user;

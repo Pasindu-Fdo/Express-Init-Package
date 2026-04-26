@@ -19,6 +19,8 @@ export type UpdateUserInput = Partial<{
   role: UserRole;
   locale: string;
   isActive: boolean;
+  resetPasswordToken: string | null;
+  resetPasswordExpires: Date | null;
 }>;
 
 /**
@@ -39,6 +41,22 @@ export type RegisterInput = {
   name: string;
   email: string;
   password: string;
+};
+
+/**
+ * Forgot password input
+ */
+export type ForgotPasswordInput = {
+  email: string;
+};
+
+/**
+ * Reset password input
+ */
+export type ResetPasswordInput = {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
 };
 
 /**

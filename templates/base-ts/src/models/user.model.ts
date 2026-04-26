@@ -9,6 +9,8 @@ const UserSchema = new Schema(
     role: { type: String, enum: ["superadmin", "admin", "user"], default: "user" },
     locale: { type: String, default: "en-US" },
     isActive: { type: Boolean, default: true },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true },
 );

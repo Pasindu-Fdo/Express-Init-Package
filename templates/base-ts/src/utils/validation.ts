@@ -1,8 +1,10 @@
 import { ValidationError } from "./errors.js";
 import type {
   PasswordRequirements,
+  ForgotPasswordInput,
   RegisterInput,
   LoginInput,
+  ResetPasswordInput,
   ChangePasswordInput,
 } from "../types/auth.type.js";
 
@@ -102,6 +104,51 @@ export function validateRegisterInput(input: unknown): RegisterInput {
     name: (data.name as string).trim(),
     email: (data.email as string).trim().toLowerCase(),
     password: data.password as string,
+  };
+}
+
+/**
+ * Validates forgot password input
+ */
+export function validateForgotPasswordInput(input: unknown): ForgotPasswordInput {
+  if (!input || typeof input !== "object") {
+    throw new ValidationError("Invalid input data");
+  }
+
+  const data = input as Record<string, unknown>;
+
+  validateRequiredString(data.email, "Email");
+  validateEmail(data.email as string);
+
+  return {
+    email: (data.email as string).trim().toLowerCase(),
+  };
+}
+
+/**
+ * Validates reset password input
+ */
+export function validateResetPasswordInput(input: unknown): ResetPasswordInput {
+  if (!input || typeof input !== "object") {
+    throw new ValidationError("Invalid input data");
+  }
+
+  const data = input as Record<string, unknown>;
+
+  validateRequiredString(data.token, "Token");
+  validateRequiredString(data.newPassword, "New password");
+  validateRequiredString(data.confirmPassword, "Confirm password");
+
+  validatePassword(data.newPassword as string);
+
+  if (data.newPassword !== data.confirmPassword) {
+    throw new ValidationError("Passwords do not match");
+  }
+
+  return {
+    token: data.token as string,
+    newPassword: data.newPassword as string,
+    confirmPassword: data.confirmPassword as string,
   };
 }
 

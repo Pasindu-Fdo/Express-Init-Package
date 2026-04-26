@@ -4,6 +4,7 @@ import type { JwtUserPayload, UserRole } from "../types/auth.type.js";
 import userRepository from "../repositories/user.repository.js";
 import logger from "../utils/logger.js";
 export interface AuthRequest extends Request {
+  body: Record<string, unknown>;
   user?: JwtUserPayload;
 }
 

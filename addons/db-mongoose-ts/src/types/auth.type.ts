@@ -4,8 +4,9 @@
 
 export type UserRole = "superadmin" | "admin" | "user";
 export type JwtUserPayload = { id: string; role: UserRole };
-export type CreateUserInput = { name: string; email: string; passwordHash: string; role: UserRole };
+export type CreateUserInput = { name: string; email: string; passwordHash: string };
 export type UpdateUserInput = Partial<{
   name: string; email: string; passwordHash: string;
   photoUrl: string; role: UserRole; locale: string; isActive: boolean;
+  resetPasswordToken: string | null; resetPasswordExpires: Date | null;
 }>;

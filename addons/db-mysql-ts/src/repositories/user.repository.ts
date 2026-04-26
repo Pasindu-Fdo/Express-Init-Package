@@ -7,10 +7,19 @@ class UserRepository {
     return prisma.user.findUnique({ where: { email } });
   }
 
-  async create(data: CreateUserInput) {
-    return prisma.user.create({
-      data: { ...data, role: data.role as Role },
+  async findByResetPasswordToken(token: string) {
+    return prisma.user.findFirst({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          gt: new Date(),
+        },
+      },
     });
+  }
+
+  async create(data: CreateUserInput) {
+    return prisma.user.create({ data });
   }
 
   async findById(id: string) {
@@ -18,10 +27,7 @@ class UserRepository {
   }
 
   async update(id: string, data: UpdateUserInput) {
-    return prisma.user.update({
-      where: { id },
-      data: { ...data, ...(data.role && { role: data.role as Role }) },
-    });
+    return prisma.user.update({ where: { id }, data });
   }
 }
 
