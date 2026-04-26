@@ -10,12 +10,12 @@ import {
 import { validateLoginInput, validateChangePasswordInput } from "../utils/validation.js";
 
 class AuthService {
-  async register(name, email, password, role) {
+  async register(name, email, password) {
     const existing = await userRepository.findByEmail(email);
     if (existing) throw new ConflictError("Email already taken");
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await userRepository.create({ name, email, role, passwordHash });
+    const user = await userRepository.create({ name, email, passwordHash });
     if (!user) throw new InternalServerError("Failed to create user");
 
     return this.generateToken(user.id, user.role);

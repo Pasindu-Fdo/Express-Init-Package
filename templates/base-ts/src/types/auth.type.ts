@@ -9,7 +9,6 @@ export type CreateUserInput = {
   name: string;
   email: string;
   passwordHash: string;
-  role: UserRole;
 };
 
 export type UpdateUserInput = Partial<{
@@ -39,6 +38,7 @@ export type PasswordRequirements = {
 export type RegisterInput = {
   name: string;
   email: string;
+  password: string;
 };
 
 /**

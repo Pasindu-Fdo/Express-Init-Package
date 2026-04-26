@@ -38,10 +38,13 @@ export function validateRegisterInput(input) {
   if (!input || typeof input !== "object") throw new ValidationError("Invalid input data");
   validateRequiredString(input.name, "Name");
   validateRequiredString(input.email, "Email");
+  validateRequiredString(input.password, "Password");
   validateEmail(input.email);
+  validatePassword(input.password);
   return {
     name: input.name.trim(),
     email: input.email.trim().toLowerCase(),
+    password: input.password,
   };
 }
 

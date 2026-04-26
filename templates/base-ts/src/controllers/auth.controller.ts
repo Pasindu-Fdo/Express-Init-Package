@@ -2,12 +2,13 @@ import type { Response } from "express";
 import type { AuthRequest } from "../middlewares/auth.middleware.js";
 import authService from "../services/auth.service.js";
 import { asyncHandler } from "../middlewares/error.middleware.js";
+import { validateRegisterInput } from "../utils/validation.js";
 
 class AuthController {
   register = asyncHandler(async (req, res: Response) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = validateRegisterInput(req.body);
 
-    const token = await authService.register(name, email, password, role);
+    const token = await authService.register(name, email, password);
 
     res.status(201).json({
       message: "Registration successful",

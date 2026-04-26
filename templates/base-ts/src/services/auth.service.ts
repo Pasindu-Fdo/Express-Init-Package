@@ -8,10 +8,10 @@ import {
   InternalServerError,
 } from "../utils/errors.js";
 import { validateLoginInput, validateChangePasswordInput } from "../utils/validation.js";
-import type { UserRole, LoginInput, ChangePasswordInput } from "../types/auth.type.js";
+import type { LoginInput, ChangePasswordInput } from "../types/auth.type.js";
 
 class AuthService {
-  async register(name: string, email: string, password: string, role: UserRole) {
+  async register(name: string, email: string, password: string) {
     const existing = await userRepository.findByEmail(email);
     if (existing) throw new ConflictError("Email already taken");
 
@@ -20,7 +20,6 @@ class AuthService {
     const user = await userRepository.create({
       name,
       email,
-      role,
       passwordHash,
     });
 

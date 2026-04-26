@@ -93,12 +93,15 @@ export function validateRegisterInput(input: unknown): RegisterInput {
 
   validateRequiredString(data.name, "Name");
   validateRequiredString(data.email, "Email");
+  validateRequiredString(data.password, "Password");
 
   validateEmail(data.email as string);
+  validatePassword(data.password as string);
 
   return {
     name: (data.name as string).trim(),
     email: (data.email as string).trim().toLowerCase(),
+    password: data.password as string,
   };
 }
 
