@@ -191,7 +191,7 @@ export async function scaffold({ projectName, language, database, includeTests, 
     process.exit(1);
   }
 
-  console.log(chalk.cyan(`\nScaffolding ${chalk.bold(projectName)}...\n`));
+  console.log(chalk.cyan("\nProject initializing (may take a few minutes)...\n"));
 
   // ── 1. Copy base template ──────────────────────────────────────────────────
   const baseDir = path.join(ROOT_DIR, "templates", `base-${lang}`);
@@ -236,22 +236,28 @@ export async function scaffold({ projectName, language, database, includeTests, 
   await fs.writeFile(path.join(destDir, ".env.example"), finalEnv);
 
   // ── 8. Install dependencies ─────────────────────────────────────────────────
-  console.log(chalk.white('\nInstalling dependencies (this may take a few minutes)...'));
   try {
     await new Promise((resolve, reject) => {
-      const child = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install'], {
+      let stderr = "";
+
+      const child = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['install', '--silent', '--no-audit', '--no-fund'], {
         cwd: destDir,
-        stdio: 'inherit',
+        stdio: ['ignore', 'ignore', 'pipe'],
         shell: false,
+      });
+
+      child.stderr.on('data', (chunk) => {
+        stderr += String(chunk);
       });
 
       child.on('close', (code) => {
         if (code === 0) return resolve();
-        return reject(new Error(`npm install exited with code ${code}`));
+        const summary = stderr.trim();
+        const tail = summary ? summary.split(/\r?\n/).slice(-8).join("\n") : `npm install exited with code ${code}`;
+        return reject(new Error(tail));
       });
       child.on('error', (err) => reject(err));
     });
-    console.log(chalk.green('\n✔ Dependencies installed successfully.'));
   } catch (err) {
     console.error(chalk.red('\nError installing dependencies:'), err.message || err);
     console.log(chalk.yellow(`\nYou can install manually by running:\n  cd ${projectName}\n  npm install`));

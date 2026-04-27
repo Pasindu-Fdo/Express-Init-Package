@@ -17,10 +17,13 @@ if (argvProjectName && projectQuestion?.validate) {
 }
 
 const promptQuestions = questions.map((question) => {
+	const withUiDefaults = { ...question, prefix: chalk.cyan("›") };
+
 	if (question.name === "projectName" && argvProjectName) {
-		return { ...question, default: argvProjectName, when: false };
+		return { ...withUiDefaults, default: argvProjectName, when: false };
 	}
-	return question;
+
+	return withUiDefaults;
 });
 
 const answers = await inquirer.prompt(promptQuestions);
