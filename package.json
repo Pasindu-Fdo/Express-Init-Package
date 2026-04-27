@@ -1,6 +1,6 @@
 {
   "name": "create-express-init",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A production-ready Express.js starter template with built-in authentication, JWT support, and scalable project structure. Quickly scaffold secure and maintainable Express applications with minimal setup.",
   "bin": {
     "create-express-init": "./bin/create-express-init.js"

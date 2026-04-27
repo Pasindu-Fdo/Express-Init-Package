@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.1](https://github.com/Pasindu-Fdo/Express-Init-Package/compare/v1.3.0...v1.3.1) (2026-04-27)
+
+
+### Bug Fixes
+
+* added logs to the template ([c31d9fd](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/c31d9fde1496e9d26795b9035abf0219c236a99a))
+* minor changes on CLI view ([6e4681b](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/6e4681bc7dbcf7e1c2a5ed9df2868e352f40faba))
+* updated the prisma to version 7 ([5dd0efc](https://github.com/Pasindu-Fdo/Express-Init-Package/commit/5dd0efcfc16b2d0b6e1a796db44edbeaf08aff54))
+
 # [1.3.0](https://github.com/Pasindu-Fdo/Express-Init-Package/compare/v1.2.0...v1.3.0) (2026-04-26)
 
 
