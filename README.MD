@@ -4,7 +4,7 @@ Scaffold a production-ready Express.js authentication starter for JavaScript and
 
 [![npm version](https://img.shields.io/npm/v/create-express-init.svg)](https://www.npmjs.com/package/create-express-init)
 [![Node.js](https://img.shields.io/node/v/create-express-init)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
 ## Why create-express-init
 
@@ -84,4 +84,10 @@ npx prisma migrate dev --name init
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+This project is licensed under a proprietary Development Use Only license.
+
+- You can use this tool for personal or internal development.
+- You can build applications with it.
+- You cannot redistribute, resell, repackage, or publish this tool (or substantial parts of it) as your own.
+
+See [LICENSE](LICENSE) for full terms.
